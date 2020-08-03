@@ -6,6 +6,8 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_profile_edit.*
 import java.text.SimpleDateFormat
@@ -25,6 +27,7 @@ class profileEditActivity : AppCompatActivity() {
 
         profile_confirm.setOnClickListener{
             //openAlbum()
+            saveData()
         }
     }
 
@@ -36,6 +39,19 @@ class profileEditActivity : AppCompatActivity() {
         storageRef.putFile(photoUri).addOnSuccessListener {
             Toast.makeText(this, "Upload photo completed", Toast.LENGTH_LONG).show()
         }
+    }
+    fun saveData(){
+        val user = FirebaseAuth.getInstance().currentUser?.uid
+        var setEditName=editName.text.toString()
+        var setEditStatusMessage=editStatusMessage.text.toString()
+        var map = mutableMapOf<String,Any>()
+        map["name"] = setEditName
+        map["statusmessage"] = setEditStatusMessage
+
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(user.toString())
+            .set(map)
     }
 
 }

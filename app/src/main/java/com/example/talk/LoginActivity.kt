@@ -29,7 +29,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         var gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)  //구글 로그인구현에 필요한 변수들
-            .requestIdToken(getString(R.string.default_web_client_id))              //firebase documentation 예제 기반으로 구현했음.
+            .requestIdToken("42975930063-5n5rhahit49t2pd7lcp6kkr8up9rm8d1.apps.googleusercontent.com")              //firebase documentation 예제 기반으로 구현했음.
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)

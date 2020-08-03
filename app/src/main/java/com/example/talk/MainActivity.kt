@@ -21,12 +21,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         var gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestIdToken("42975930063-5n5rhahit49t2pd7lcp6kkr8up9rm8d1.apps.googleusercontent.com")
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this,gso)
         logout_button.setOnClickListener {
             logout()
+        }
+        profile_edit_button.setOnClickListener {
+            startActivity(Intent(this, profileEditActivity::class.java))
+            this.finish()
         }
     }
 
