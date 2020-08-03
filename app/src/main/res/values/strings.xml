@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Talk</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
