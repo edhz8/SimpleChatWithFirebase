@@ -10,6 +10,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.android.synthetic.main.activity_login.*
+import org.jetbrains.anko.toast
 
 /* 로그인방법을 선택하는 화면 , 앱의 시작화면이다.
    페이스북 로그인 아직 미구현. 로그인오류일때 세부적으로 처리예정.
@@ -50,6 +51,7 @@ class LoginActivity : AppCompatActivity() {
 
     fun firebaseAuthWithGoogle(idToken: String){    //구글로그인이 성공적인지 확인하는 함수
         var credential = GoogleAuthProvider.getCredential(idToken, null)
+        toast("회원정보 확인중")
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener { task ->
             if(task.isSuccessful){
@@ -72,13 +74,7 @@ class LoginActivity : AppCompatActivity() {
                 val account = task.getResult(ApiException::class.java)!!
                 firebaseAuthWithGoogle(account.idToken!!)   // 원래 참고하던 자료에서는 account 자체를 넘겼엇는데
                                                             // documentation보고 account.idToken을 넘겨주는 방식으로 바꿨더니 오류안났음.
-            }
-            catch (e : ApiException){
-                                                            // 로그인 실패처리에 대해서 추가할 예정.
-            }
-        }
-        else{
-
+            } catch (e : ApiException){ }
         }
     }
 }
