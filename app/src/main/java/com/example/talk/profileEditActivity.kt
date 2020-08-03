@@ -1,6 +1,7 @@
 package com.example.talk
 
 import android.Manifest
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +29,7 @@ class profileEditActivity : AppCompatActivity() {
         profile_confirm.setOnClickListener{
             //openAlbum()
             saveData()
+            startActivity(Intent(this, MainActivity::class.java))
         }
     }
 

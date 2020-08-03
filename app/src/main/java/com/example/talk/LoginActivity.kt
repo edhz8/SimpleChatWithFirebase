@@ -9,6 +9,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_login.*
 import org.jetbrains.anko.toast
 
@@ -43,9 +45,19 @@ class LoginActivity : AppCompatActivity() {
 
     fun MoveNextPage(){     //로그인에 성공했는지 확인 후, 성공했다면 MainActivity로 이동한다.
         var currentUser = FirebaseAuth.getInstance().currentUser
+        val user = FirebaseAuth.getInstance().currentUser?.uid
+
         if(currentUser != null){
-            startActivity(Intent(this, MainActivity::class.java))
-            this.finish()
+
+            var test = FirebaseFirestore.getInstance().collection("users").whereEqualTo(user.toString(),true).get().isSuccessful
+                println("!!!!!!!!!!!!!!!!!!!!!!!!!!" + test)
+
+            if(test){
+                startActivity(Intent(this, MainActivity::class.java))
+                this.finish()
+            }else{
+                startActivity(Intent(this, profileEditActivity::class.java))
+            }
         }
     }
 

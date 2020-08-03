@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this,gso)
         logout_button.setOnClickListener {
             logout()
+            startActivity(Intent(this, LoginActivity::class.java))
         }
         profile_edit_button.setOnClickListener {
             startActivity(Intent(this, profileEditActivity::class.java))
