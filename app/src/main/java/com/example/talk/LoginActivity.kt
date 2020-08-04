@@ -43,20 +43,23 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    fun MoveNextPage(){     //로그인에 성공했는지 확인 후, 성공했다면 MainActivity로 이동한다.
+    fun MoveNextPage() {     //로그인에 성공했는지 확인 후, 성공했다면 MainActivity로 이동한다.
         var currentUser = FirebaseAuth.getInstance().currentUser
         val user = FirebaseAuth.getInstance().currentUser?.uid
 
-        if(currentUser != null){
+        if (currentUser != null) {
 
-            var test = FirebaseFirestore.getInstance().collection("users").whereEqualTo(user.toString(),true).get().isSuccessful
-                println("!!!!!!!!!!!!!!!!!!!!!!!!!!" + test)
+            var test = FirebaseFirestore.getInstance().collection("users").document(user.toString())
 
-            if(test){
-                startActivity(Intent(this, MainActivity::class.java))
-                this.finish()
-            }else{
-                startActivity(Intent(this, profileEditActivity::class.java))
+            test.get().addOnSuccessListener { document ->
+                println("!!!!!!!!!!!!!!!!!!!!!!!!!!" + document)
+                println("!!!!!!!!!!!!!!!!!!!!!!!!!!" + document.data)
+                if (document.data != null) {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    this.finish()
+                } else {
+                    startActivity(Intent(this, profileEditActivity::class.java))
+                }
             }
         }
     }
