@@ -49,11 +49,9 @@ class LoginActivity : AppCompatActivity() {
 
         if (currentUser != null) {
 
-            var test = FirebaseFirestore.getInstance().collection("users").document(user.toString())
+            var doc = FirebaseFirestore.getInstance().collection("users").document(user.toString())
 
-            test.get().addOnSuccessListener { document ->
-                println("!!!!!!!!!!!!!!!!!!!!!!!!!!" + document)
-                println("!!!!!!!!!!!!!!!!!!!!!!!!!!" + document.data)
+            doc.get().addOnSuccessListener { document ->
                 if (document.data != null) {
                     startActivity(Intent(this, MainActivity::class.java))
                     this.finish()

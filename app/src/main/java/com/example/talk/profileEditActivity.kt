@@ -34,11 +34,24 @@ class profileEditActivity : AppCompatActivity() {
             requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
         }
 
-        val imagePath = intent.getStringExtra("profileImagePath")
+
+        var imagePath = ""
+        FirebaseFirestore.getInstance().collection("users")
+            .document(FirebaseAuth.getInstance().currentUser?.uid.toString())
+            .addSnapshotListener { snapshot, firestoreException ->
+                if (firestoreException != null) return@addSnapshotListener
+                if (snapshot != null) {
+                    imagePath = snapshot["profilePicPath"].toString()
+                }
+            }
 
         if(imagePath != null){
             Glide.with(this)
                 .load(imagePath)
+                .into(profilePic)
+        } else{
+            Glide.with(this)
+                .load(R.drawable.users)
                 .into(profilePic)
         }
 
@@ -94,7 +107,6 @@ class profileEditActivity : AppCompatActivity() {
                     val byteArray = outputStream.toByteArray()
 
                     val user = FirebaseAuth.getInstance().currentUser?.uid
-                    val localDateTime = Calendar.getInstance().time
                     val fileName = user.toString() + ".png"
 
                     var profilePicRef = FirebaseStorage.getInstance().reference
@@ -119,21 +131,22 @@ class profileEditActivity : AppCompatActivity() {
         }
     }
     fun saveData(){
-        val user = FirebaseAuth.getInstance().currentUser?.uid
+        val user = FirebaseAuth.getInstance().currentUser?.uid.toString()
         var setEditName=editName.text.toString()
         var setEditStatusMessage=editStatusMessage.text.toString()
         var map = mutableMapOf<String,Any>()
         map["name"] = setEditName
         map["statusmessage"] = setEditStatusMessage
+        map["uid"] = user
         if(profilePicUri == "not_changed") {
-            map["profilePicPath"] = "https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=3913c156-eff2-42fa-99f4-c30ec8e8ab01"
+            map["profilePicPath"] = "https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=64c14c60-409f-4f38-982e-c65bd9c814a0"
         }else{
             map["profilePicPath"] = profilePicUri
         }
 
         FirebaseFirestore.getInstance()
             .collection("users")
-            .document(user.toString())
+            .document(user)
             .set(map)
     }
 }
