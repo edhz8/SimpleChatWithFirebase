@@ -34,24 +34,10 @@ class profileEditActivity : AppCompatActivity() {
             requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
         }
 
-
-        var imagePath = ""
-        FirebaseFirestore.getInstance().collection("users")
-            .document(FirebaseAuth.getInstance().currentUser?.uid.toString())
-            .addSnapshotListener { snapshot, firestoreException ->
-                if (firestoreException != null) return@addSnapshotListener
-                if (snapshot != null) {
-                    imagePath = snapshot["profilePicPath"].toString()
-                }
-            }
-
-        if(imagePath != null){
+        val profilePicPath = intent.getStringExtra("profilePicPath")
+        if(profilePicPath != "default"){
             Glide.with(this)
-                .load(imagePath)
-                .into(profilePic)
-        } else{
-            Glide.with(this)
-                .load(R.drawable.users)
+                .load(profilePicPath)
                 .into(profilePic)
         }
 
@@ -71,6 +57,10 @@ class profileEditActivity : AppCompatActivity() {
                 }
                 .show()
         }
+
+        editStatusMessage.setText(intent.getStringExtra("statusMessage"))
+        editName.setText(intent.getStringExtra("name"))
+
 
         profile_confirm.setOnClickListener{
             //openAlbum()
@@ -139,7 +129,7 @@ class profileEditActivity : AppCompatActivity() {
         map["statusmessage"] = setEditStatusMessage
         map["uid"] = user
         if(profilePicUri == "not_changed") {
-            map["profilePicPath"] = "https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=64c14c60-409f-4f38-982e-c65bd9c814a0"
+            map["profilePicPath"] = getString(R.string.default_profilePic_url)
         }else{
             map["profilePicPath"] = profilePicUri
         }

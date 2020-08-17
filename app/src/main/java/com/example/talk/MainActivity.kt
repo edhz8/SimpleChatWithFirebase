@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.ViewCompat
@@ -42,7 +43,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-/*              이거 맨위에 내 프로필하고 그 밑에 친구목록사이에 그어진 선 만들어보려고 한건데 아직 어설퍼서 주석처리 해놓음.
         db.collection("users")
             .whereEqualTo("uid", user)
             .addSnapshotListener { snapshot, exception ->
@@ -83,14 +83,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-        val isLineExists = realm.where<FriendModel>().equalTo("uid", user).findFirst()
-        if(isLineExists == null) {
-            realm.beginTransaction()
-            val makeLine = realm.createObject<FriendModel>()
-            makeLine.uid =="Line"
-            realm.commitTransaction()
-        }
-*/
+
 
         refreshFriends()
         val realmResult = realm.where<FriendModel>().findAll().sort("name")
@@ -99,6 +92,18 @@ class MainActivity : AppCompatActivity() {
         listView.adapter = adapter
 
         realmResult.addChangeListener { _ -> adapter.notifyDataSetChanged() }
+
+        listView.onItemClickListener = AdapterView.OnItemClickListener { parent, v, position, id ->
+            val item = parent.getItemAtPosition(position) as FriendModel
+            val intent = Intent(this,showProfileActivity::class.java)
+            intent.putExtra("name",item.name)
+            intent.putExtra("profilePicPath",item.profilePicPath)
+            intent.putExtra("statusMessage",item.statusMessage)
+            intent.putExtra("uid",item.uid)
+            intent.putExtra("user",user)
+            intent.putExtra("phoneNum",item.phoneNum)
+            startActivity(intent)
+        }
 
         logout.setOnClickListener(){
             logout()
@@ -181,7 +186,7 @@ class MainActivity : AppCompatActivity() {
                                             val newItem = realm.createObject<FriendModel>()
                                             newItem.name = if(dc["nickname"] != "") dc["nickname"].toString() else if(it["name"] != "") it["name"].toString() else "알수없는 사용자"
                                             newItem.phoneNum = if(it["phoneNum"] != null) it["phoneNum"].toString() else ""
-                                            newItem.profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else "https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=64c14c60-409f-4f38-982e-c65bd9c814a0"
+                                            newItem.profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
                                             newItem.statusMessage = if(it["statusmessage"] != "") it["statusmessage"].toString() else ""
                                             newItem.uid = if(it["uid"] != null) it["uid"].toString() else ""
                                             realm.commitTransaction()
@@ -189,7 +194,7 @@ class MainActivity : AppCompatActivity() {
                                             realm.beginTransaction()
                                             name = if(dc["nickname"] != "") dc["nickname"].toString() else if(it["name"] != "") it["name"].toString() else "알수없는 사용자"
                                             phoneNum = if(it["phoneNum"] != null) it["phoneNum"].toString() else ""
-                                            profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else "https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=64c14c60-409f-4f38-982e-c65bd9c814a0"
+                                            profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
                                             statusMessage = if(it["statusmessage"] != "") it["statusmessage"].toString() else ""
                                             uid = if(it["uid"] != null) it["uid"].toString() else ""
                                             realm.commitTransaction()

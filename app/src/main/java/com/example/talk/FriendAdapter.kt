@@ -69,8 +69,7 @@ class FriendAdapter(context: Context, realmResult: OrderedRealmCollection<Friend
 
                 VIEWTYPE_MY_PROFILE_WITHOUT_SM -> {
                     viewHolder = ViewHolder()
-                    view =
-                        mInflater.inflate(R.layout.myprofile_without_statusmessage, parent, false)
+                    view = mInflater.inflate(R.layout.myprofile_without_statusmessage, parent, false)
                     viewHolder.nameView = view.findViewById(R.id.item_myprofile_withoutSM_name)
                     viewHolder.profilePicView =
                         view.findViewById(R.id.item_myprofile_withoutSM_profilePic)
@@ -78,7 +77,9 @@ class FriendAdapter(context: Context, realmResult: OrderedRealmCollection<Friend
                 }
 
                 VIEWTYPE_LINE -> {
+                    viewHolder = ViewHolder()
                     view = mInflater.inflate(R.layout.friend_line, parent, false)
+                    view.tag = viewHolder
                 }
             }
         } else {
