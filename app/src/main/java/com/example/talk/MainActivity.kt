@@ -1,122 +1,53 @@
 package com.example.talk
 
-import android.app.Activity
-import android.app.ProgressDialog
-import android.content.Context
-import android.content.Intent
+
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
-import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityOptionsCompat
-import androidx.core.view.ViewCompat
-import com.bumptech.glide.Glide
-import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
-import de.hdodenhof.circleimageview.CircleImageView
-import io.realm.Realm
-import io.realm.Sort
-import io.realm.kotlin.createObject
-import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_profile_edit.*
-import org.jetbrains.anko.startActivity
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
-    lateinit var profileImagePath : String
-    val db = FirebaseFirestore.getInstance()
-    val user : String by lazy{
-        FirebaseAuth.getInstance().currentUser?.uid.toString()
+    override fun onNavigationItemSelected(p0: MenuItem): Boolean {
+        when(p0.itemId) {
+            R.id.home->{
+                val transaction =supportFragmentManager.beginTransaction()
+                transaction.replace(R.id.frame_Layout,FriendFragment())
+                transaction.commit()
+                return true
+            }
+            R.id.chat-> {
+                val transaction =supportFragmentManager.beginTransaction()
+                transaction.replace(R.id.frame_Layout,ChatFragment())
+                transaction.commit()
+                return true
+            }
+        }
+        return false
     }
-    val realm = Realm.getDefaultInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        db.collection("users")
-            .whereEqualTo("uid", user)
-            .addSnapshotListener { snapshot, exception ->
-                if (exception != null) return@addSnapshotListener
-                else {
-                    println("exception null")
-                }
-                if (snapshot != null) {
-                    snapshot.forEach {
-                        val friend = realm.where<FriendModel>().equalTo("uid", user).findFirst()
-                        if (friend == null) {
-                            realm.beginTransaction()
-                            val newItem = realm.createObject<FriendModel>()
-                            newItem.name =
-                                if (it["name"] != "") it["name"].toString() else "알수없는 사용자"
-                            newItem.phoneNum =
-                                if (it["phoneNum"] != null) it["phoneNum"].toString() else ""
-                            newItem.profilePicPath =
-                                if (it["profilePicPath"] != "") it["profilePicPath"].toString() else "https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=64c14c60-409f-4f38-982e-c65bd9c814a0"
-                            newItem.statusMessage =
-                                if (it["statusmessage"] != "") it["statusmessage"].toString() else ""
-                            newItem.uid = if (it["uid"] != null) it["uid"].toString() else ""
-                            realm.commitTransaction()
-                        } else {
-                            friend?.apply {
-                                realm.beginTransaction()
-                                name = if (it["name"] != "") it["name"].toString() else "알수없는 사용자"
-                                phoneNum =
-                                    if (it["phoneNum"] != null) it["phoneNum"].toString() else ""
-                                profilePicPath =
-                                    if (it["profilePicPath"] != "") it["profilePicPath"].toString() else "https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=64c14c60-409f-4f38-982e-c65bd9c814a0"
-                                statusMessage =
-                                    if (it["statusmessage"] != "") it["statusmessage"].toString() else ""
-                                uid = if (it["uid"] != null) it["uid"].toString() else ""
-                                realm.commitTransaction()
-                            }
-                        }
-                    }
-                }
-            }
-
-
-        refreshFriends()
-        val realmResult = realm.where<FriendModel>().findAll().sort("name")
-
-        val adapter = FriendAdapter(this,realmResult)
-        listView.adapter = adapter
-
-        realmResult.addChangeListener { _ -> adapter.notifyDataSetChanged() }
-
-        listView.onItemClickListener = AdapterView.OnItemClickListener { parent, v, position, id ->
-            val item = parent.getItemAtPosition(position) as FriendModel
-            val intent = Intent(this,showProfileActivity::class.java)
-            intent.putExtra("name",item.name)
-            intent.putExtra("profilePicPath",item.profilePicPath)
-            intent.putExtra("statusMessage",item.statusMessage)
-            intent.putExtra("uid",item.uid)
-            intent.putExtra("user",user)
-            intent.putExtra("phoneNum",item.phoneNum)
-            startActivity(intent)
-        }
-
-        logout.setOnClickListener(){
+        bottomNavigationView.setOnNavigationItemSelectedListener(this)
+        /*logout.setOnClickListener(){
             logout()
+            realm.beginTransaction()
             realm.deleteAll()
+            realm.commitTransaction()
             startActivity(Intent(this, LoginActivity::class.java))
-        }
+        }*/
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        realm.close()
-    }
-
+/*
     fun logout(){
         var googleSignInClient : GoogleSignInClient? = null
         var gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -159,54 +90,6 @@ class MainActivity : AppCompatActivity() {
             .collection("users")
             .document(user.toString())
             .set(map)
-    }
+    }*/
 
-    fun refreshFriends(){
-        db.collection("users")
-            .document(user)
-            .collection("friends")
-            .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-                if (firebaseFirestoreException != null) return@addSnapshotListener
-                if (querySnapshot != null) {
-
-                    for (dc in querySnapshot.documents) {
-                        val frienduid = dc["uid"].toString()
-                        db.collection("users")
-                            .whereEqualTo("uid", frienduid)
-                            .addSnapshotListener { snapshot, exception ->
-                                if(exception != null) return@addSnapshotListener
-                                else{
-                                    println("exception null")
-                                }
-                                if(snapshot != null){
-                                    snapshot.forEach{
-                                        val friend = realm.where<FriendModel>().equalTo("uid",frienduid).findFirst()
-                                        if(friend == null){
-                                            realm.beginTransaction()
-                                            val newItem = realm.createObject<FriendModel>()
-                                            newItem.name = if(dc["nickname"] != "") dc["nickname"].toString() else if(it["name"] != "") it["name"].toString() else "알수없는 사용자"
-                                            newItem.phoneNum = if(it["phoneNum"] != null) it["phoneNum"].toString() else ""
-                                            newItem.profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
-                                            newItem.statusMessage = if(it["statusmessage"] != "") it["statusmessage"].toString() else ""
-                                            newItem.uid = if(it["uid"] != null) it["uid"].toString() else ""
-                                            realm.commitTransaction()
-                                        }else {friend?.apply{
-                                            realm.beginTransaction()
-                                            name = if(dc["nickname"] != "") dc["nickname"].toString() else if(it["name"] != "") it["name"].toString() else "알수없는 사용자"
-                                            phoneNum = if(it["phoneNum"] != null) it["phoneNum"].toString() else ""
-                                            profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
-                                            statusMessage = if(it["statusmessage"] != "") it["statusmessage"].toString() else ""
-                                            uid = if(it["uid"] != null) it["uid"].toString() else ""
-                                            realm.commitTransaction()
-                                            }}
-                                    }
-                                }else{
-                                    println("snapshot null")
-                                }
-                            }
-                    }
-                }
-
-            }
-    }
 }

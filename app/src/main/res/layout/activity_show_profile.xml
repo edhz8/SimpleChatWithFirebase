@@ -21,8 +21,8 @@
 
     <TextView
         android:id="@+id/showProfileActivity_statusMessage"
-        android:layout_width="84dp"
-        android:layout_height="22dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="114dp"
         android:text="됐냐? 됐다.."
         android:textColor="@android:color/black"

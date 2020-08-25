@@ -23,6 +23,7 @@ import java.io.IOException
 import java.util.*
 
 /* 프로필 변경 엑티비티 fire store 로 구현예정. */
+@Suppress("DEPRECATION")
 class profileEditActivity : AppCompatActivity() {
     val GALLERY = 0
     private var profilePicUri = "not_changed"
@@ -44,7 +45,7 @@ class profileEditActivity : AppCompatActivity() {
         profilePic.setOnClickListener {
             val option = arrayOf("앨범에서 사진 선택", "기본 이미지")
             AlertDialog.Builder(this@profileEditActivity)
-                .setItems(option) { dialog, which ->
+                .setItems(option) { _, which ->
                     when (option[which]) {
                         "앨범에서 사진 선택" -> {
                             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)

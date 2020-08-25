@@ -54,5 +54,9 @@ class showProfileActivity : AppCompatActivity() {
                 }
             }
         }
+
+        showProfileActivity_makeChatRoom.setOnClickListener{
+
+        }
     }
 }

@@ -2,4 +2,6 @@
     <string name="app_name">Talk</string>
     <string name="title_activity_maps">Map</string>
     <string name="default_profilePic_url"><![CDATA[https://firebasestorage.googleapis.com/v0/b/talk-fc671.appspot.com/o/profilePic%2Fusers.png?alt=media&token=64c14c60-409f-4f38-982e-c65bd9c814a0]]></string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
