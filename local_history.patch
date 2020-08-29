@@ -1,0 +1,407 @@
+Index: app/src/main/java/com/example/talk/FriendFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/talk/FriendFragment.kt	(date 1598430036721)
++++ app/src/main/java/com/example/talk/FriendFragment.kt	(date 1598430036721)
+@@ -1,26 +1,16 @@
+ package com.example.talk
+ 
++import android.content.Context
+ import android.content.Intent
+ import android.os.Bundle
+-import android.util.Log
+ import androidx.fragment.app.Fragment
+ import android.view.LayoutInflater
+ import android.view.View
+ import android.view.ViewGroup
+-import android.widget.AdapterView
+-import android.widget.ImageView
+-import android.widget.ListView
+-import android.widget.TextView
++import android.widget.*
+ import com.bumptech.glide.Glide
+ import com.google.firebase.auth.FirebaseAuth
+ import com.google.firebase.firestore.FirebaseFirestore
+-import io.realm.OrderedRealmCollection
+-import io.realm.Realm
+-import io.realm.RealmBaseAdapter
+-import io.realm.kotlin.createObject
+-import io.realm.kotlin.where
+-import kotlinx.android.synthetic.main.fragment_friend.*
+-
+ 
+ class FriendFragment : Fragment() {
+ 
+@@ -28,68 +18,52 @@
+     val user : String by lazy{
+         FirebaseAuth.getInstance().currentUser?.uid.toString()
+     }
+-    val realm = Realm.getDefaultInstance()
+-
+-    override fun onCreate(savedInstanceState: Bundle?) {
+-        super.onCreate(savedInstanceState)
+-    }
+ 
+     override fun onCreateView(
+         inflater: LayoutInflater, container: ViewGroup?,
+         savedInstanceState: Bundle?
+     ): View? {
++
++        val view: View = inflater.inflate(R.layout.fragment_friend,container,false)
++        val adapter = FriendAdapter()
++        val connect_listView = view.findViewById<ListView>(R.id.listView)
++
+         db.collection("users")
+-            .whereEqualTo("uid", user)
+-            .addSnapshotListener { snapshot, exception ->
+-                if (exception != null) return@addSnapshotListener
+-                else {
+-                    println("exception null")
+-                }
+-                if (snapshot != null) {
+-                    snapshot.forEach {
+-                        val friend = realm.where<FriendModel>().equalTo("uid", user).findFirst()
+-                        if (friend == null) {
+-                            realm.beginTransaction()
+-                            val newItem = realm.createObject<FriendModel>()
+-                            newItem.name =
+-                                if (it["name"] != "") it["name"].toString() else "알수없는 사용자"
+-                            newItem.phoneNum =
+-                                if (it["phoneNum"] != null) it["phoneNum"].toString() else ""
+-                            newItem.profilePicPath =
+-                                if (it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
+-                            newItem.statusMessage =
+-                                if (it["statusmessage"] != "") it["statusmessage"].toString() else ""
+-                            newItem.uid = if (it["uid"] != null) it["uid"].toString() else ""
+-                            println("@@@@@@@@@@@@@@@@@@@@@"+newItem.name+" / "+newItem.statusMessage)
+-                            realm.commitTransaction()
+-                        } else {
+-                            friend.apply {
+-                                realm.beginTransaction()
+-                                name = if (it["name"] != "") it["name"].toString() else "알수없는 사용자"
+-                                phoneNum =
+-                                    if (it["phoneNum"] != null) it["phoneNum"].toString() else ""
+-                                profilePicPath =
+-                                    if (it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
+-                                statusMessage =
+-                                    if (it["statusmessage"] != "") it["statusmessage"].toString() else ""
+-                                uid = if (it["uid"] != null) it["uid"].toString() else ""
+-                                realm.commitTransaction()
+-                            }
+-                        }
++            .document(user)
++            .collection("friends")
++            .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
++                if (firebaseFirestoreException != null) return@addSnapshotListener
++                if (querySnapshot != null) {
++                    for (dc in querySnapshot.documents) {
++                        val frienduid = dc["uid"].toString()
++                        val nickname = dc["nickname"].toString()
++                        db.collection("users")
++                            .whereEqualTo("uid", frienduid)
++                            .addSnapshotListener { snapshot, exception ->
++                                if(exception != null) return@addSnapshotListener
++                                else{
++                                    println("exception null")
++                                }
++                                if(snapshot != null){
++                                    snapshot.forEach{
++                                        val name = if(nickname != "") nickname else if (it["name"] != "") it["name"].toString() else "알수없는 사용자"
++                                        val statusMessage = if (it["statusmessage"] != "") it["statusmessage"].toString() else ""
++                                        val profilePicPath = if (it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
++                                        val uid = if (it["uid"] != null) it["uid"].toString() else ""
++                                        val item  = FriendModel(name = name,statusMessage = statusMessage,profilePicPath = profilePicPath,uid = uid)
++                                        adapter.addItem(item)
++                                    }
++                                }else{
++                                    println("snapshot null")
++                                }
++                            }
+                     }
+                 }
+-            }
+ 
++            }
+ 
+-        refreshFriends()
+-        val realmResult = realm.where<FriendModel>().findAll().sort("name")
+-        val view: View = inflater.inflate(R.layout.fragment_friend,container,false)
+-        val adapter = FriendAdapter(realmResult)
+-        val connect_listView = view.findViewById<ListView>(R.id.listView)
+         connect_listView.adapter = adapter
+ 
+-        realmResult.addChangeListener { _ -> adapter?.notifyDataSetChanged() }
+-
+         connect_listView.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
+             val item = parent.getItemAtPosition(position) as FriendModel
+             val intent = Intent(getActivity(),showProfileActivity::class.java)
+@@ -105,64 +79,8 @@
+         return view
+     }
+ 
+-    fun refreshFriends(){
+-        db.collection("users")
+-            .document(user)
+-            .collection("friends")
+-            .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+-                if (firebaseFirestoreException != null) return@addSnapshotListener
+-                if (querySnapshot != null) {
+-
+-                    for (dc in querySnapshot.documents) {
+-                        val frienduid = dc["uid"].toString()
+-                        db.collection("users")
+-                            .whereEqualTo("uid", frienduid)
+-                            .addSnapshotListener { snapshot, exception ->
+-                                if(exception != null) return@addSnapshotListener
+-                                else{
+-                                    println("exception null")
+-                                }
+-                                if(snapshot != null){
+-                                    snapshot.forEach{
+-                                        val friend = realm.where<FriendModel>().equalTo("uid",frienduid).findFirst()
+-                                        if(friend == null){
+-                                            realm.beginTransaction()
+-                                            val newItem = realm.createObject<FriendModel>()
+-                                            newItem.name = if(dc["nickname"] != "") dc["nickname"].toString() else if(it["name"] != "") it["name"].toString() else "알수없는 사용자"
+-                                            newItem.phoneNum = if(it["phoneNum"] != null) it["phoneNum"].toString() else ""
+-                                            newItem.profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(R.string.default_profilePic_url)
+-                                            newItem.statusMessage = if(it["statusmessage"] != "") it["statusmessage"].toString() else ""
+-                                            newItem.uid = if(it["uid"] != null) it["uid"].toString() else ""
+-                                            realm.commitTransaction()
+-                                        }else {
+-                                            friend?.apply{
+-                                            realm.beginTransaction()
+-                                            name = if(dc["nickname"] != "") dc["nickname"].toString() else if(it["name"] != "") it["name"].toString() else "알수없는 사용자"
+-                                            phoneNum = if(it["phoneNum"] != null) it["phoneNum"].toString() else ""
+-                                            profilePicPath = if(it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(
+-                                                com.example.talk.R.string.default_profilePic_url)
+-                                            statusMessage = if(it["statusmessage"] != "") it["statusmessage"].toString() else ""
+-                                            uid = if(it["uid"] != null) it["uid"].toString() else ""
+-                                            realm.commitTransaction()
+-                                            }
+-                                        }
+-                                    }
+-                                }else{
+-                                    println("snapshot null")
+-                                }
+-                            }
+-                    }
+-                }
+ 
+-            }
+-    }
+-
+-    override fun onDestroy() {
+-        super.onDestroy()
+-        realm.close()
+-    }
+-
+-    inner class FriendAdapter(realmResult: OrderedRealmCollection<FriendModel>) : RealmBaseAdapter<FriendModel>(realmResult) {
++    inner class FriendAdapter() : BaseAdapter() {
+ 
+         inner class ViewHolder {
+             var profilePicView: ImageView? = null
+@@ -170,17 +88,29 @@
+             var statusmessageView : TextView? = null
+         }
+ 
+-        val VIEWTYPE_FRIEND_WITH_SM = 0
+-        val VIEWTYPE_FRIEND_WITHOUT_SM = 1
+-        val VIEWTYPE_MY_PROFILE_WITH_SM = 2
+-        val VIEWTYPE_MY_PROFILE_WITHOUT_SM = 3
+-        val VIEWTYPE_LINE = 4
+-        val VIEWTYPE_COUNT = 5
++
++
++         val VIEWTYPE_FRIEND_WITH_SM = 0
++         val VIEWTYPE_FRIEND_WITHOUT_SM = 1
++         val VIEWTYPE_MY_PROFILE_WITH_SM = 2
++         val VIEWTYPE_MY_PROFILE_WITHOUT_SM = 3
++         val VIEWTYPE_LINE = 4
++         val VIEWTYPE_COUNT = 5
+ 
++
+         private val user : String by lazy{
+             FirebaseAuth.getInstance().currentUser?.uid.toString()
+         }
+ 
++        var mItem = ArrayList<FriendModel>()
++
++        fun addItem(item: FriendModel){
++            mItem.add(item)
++
++            println(mItem[0].name)
++            println(mItem.get(0).name)
++        }
++
+         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+             val mInflater = LayoutInflater.from(context)
+             var view = convertView
+@@ -196,6 +126,7 @@
+                         viewHolder.profilePicView = view.findViewById(R.id.item_withSM_profilePic)
+                         viewHolder.statusmessageView = view.findViewById(R.id.item_withSM_statusmessage)
+                         view.tag = viewHolder
++
+                     }
+ 
+                     VIEWTYPE_FRIEND_WITHOUT_SM -> {
+@@ -210,10 +141,8 @@
+                         viewHolder = ViewHolder()
+                         view = mInflater.inflate(R.layout.myprofile_with_statusmessage, parent, false)
+                         viewHolder.nameView = view.findViewById(R.id.item_myprofile_withSM_name)
+-                        viewHolder.profilePicView =
+-                            view.findViewById(R.id.item_myprofile_withSM_profilePic)
+-                        viewHolder.statusmessageView =
+-                            view.findViewById(R.id.item_myprofile_withSM_statusmessage)
++                        viewHolder.profilePicView = view.findViewById(R.id.item_myprofile_withSM_profilePic)
++                        viewHolder.statusmessageView = view.findViewById(R.id.item_myprofile_withSM_statusmessage)
+                         view.tag = viewHolder
+                     }
+ 
+@@ -221,8 +150,7 @@
+                         viewHolder = ViewHolder()
+                         view = mInflater.inflate(R.layout.myprofile_without_statusmessage, parent, false)
+                         viewHolder.nameView = view.findViewById(R.id.item_myprofile_withoutSM_name)
+-                        viewHolder.profilePicView =
+-                            view.findViewById(R.id.item_myprofile_withoutSM_profilePic)
++                        viewHolder.profilePicView = view.findViewById(R.id.item_myprofile_withoutSM_profilePic)
+                         view.tag = viewHolder
+                     }
+ 
+@@ -235,86 +163,77 @@
+             } else {
+                 viewHolder = view.tag as ViewHolder
+             }
+-            adapterData?.let {
+-                val item = it[position]
+-                when (type) { //뷰홀더에 어떤값들을 넣어줄건지 지정하는부분
+-                    VIEWTYPE_FRIEND_WITH_SM -> {
+-                        viewHolder.nameView!!.text = item.name
+-                        Glide.with(view!!)
+-                            .load(item.profilePicPath)
+-                            .into(viewHolder.profilePicView!!)
+-                        viewHolder.statusmessageView!!.text = item.statusMessage
+-                    }
++
++            val item = mItem.get(position)
++
++            println("type : "+type)
++            println("item: "+item)
++            when (type) { //뷰홀더에 어떤값들을 넣어줄건지 지정하는부분
++                VIEWTYPE_FRIEND_WITH_SM -> {
++                    viewHolder.nameView!!.text = item.name
++                    Glide.with(view!!)
++                        .load(item.profilePicPath)
++                        .into(viewHolder.profilePicView!!)
++                    viewHolder.statusmessageView!!.text = item.statusMessage
++                }
+ 
+-                    VIEWTYPE_FRIEND_WITHOUT_SM -> {
+-                        viewHolder.nameView!!.text = item.name
+-                        Glide.with(view!!)
+-                            .load(item.profilePicPath)
+-                            .into(viewHolder.profilePicView!!)
+-                    }
++                VIEWTYPE_FRIEND_WITHOUT_SM -> {
++                    viewHolder.nameView!!.text = item.name
++                    Glide.with(view!!)
++                        .load(item.profilePicPath)
++                        .into(viewHolder.profilePicView!!)
++                }
+ 
+-                    VIEWTYPE_MY_PROFILE_WITH_SM -> {
+-                        viewHolder.nameView!!.text = item.name
+-                        Glide.with(view!!)
+-                            .load(item.profilePicPath)
+-                            .into(viewHolder.profilePicView!!)
+-                        viewHolder.statusmessageView!!.text = item.statusMessage
+-                    }
++                VIEWTYPE_MY_PROFILE_WITH_SM -> {
++                    viewHolder.nameView!!.text = item.name
++                    Glide.with(view!!)
++                        .load(item.profilePicPath)
++                        .into(viewHolder.profilePicView!!)
++                    viewHolder.statusmessageView!!.text = item.statusMessage
++                }
+ 
+-                    VIEWTYPE_MY_PROFILE_WITHOUT_SM -> {
+-                        viewHolder.nameView!!.text = item.name
+-                        Glide.with(view!!)
+-                            .load(item.profilePicPath)
+-                            .into(viewHolder.profilePicView!!)
+-                    }
+-                    else ->{ }
+-                }
++                VIEWTYPE_MY_PROFILE_WITHOUT_SM -> {
++                    viewHolder.nameView!!.text = item.name
++                    Glide.with(view!!)
++                        .load(item.profilePicPath)
++                        .into(viewHolder.profilePicView!!)
++                }
++                else ->{ }
+             }
+             return view!!
+         }
+ 
+         override fun getItem(position: Int): FriendModel? {
+-            adapterData?.let{
+-                return it[position]
+-            }
+-            return super.getItem(position)
++            return mItem.get(position)
+         }
+ 
+         override fun getItemId(position: Int): Long {
+-            adapterData?.let {
+-                return position.toLong()
+-            }
+-            return super.getItemId(position)
++            return position.toLong()
+         }
+ 
+         override fun getCount(): Int {
+-            adapterData?.let{
+-                return it.size
+-            }
+-            return super.getCount()
++            return mItem.size
+         }
+ 
+-        override fun getViewTypeCount(): Int {
++        override fun getViewTypeCount() : Int {
+             return VIEWTYPE_COUNT
+         }
+ 
+         override fun getItemViewType(position: Int): Int {
+             var ret = -1
+-            adapterData?.let {
+-                if (it[position].uid == "Line") ret = VIEWTYPE_LINE
+-                else if (it[position].statusMessage != "" && it[position].uid != user) ret =
+-                    VIEWTYPE_FRIEND_WITH_SM
+-                else if (it[position].statusMessage == "" && it[position].uid != user) ret =
+-                    VIEWTYPE_FRIEND_WITHOUT_SM
+-                else if (it[position].statusMessage != "" && it[position].uid == user) ret =
+-                    VIEWTYPE_MY_PROFILE_WITH_SM
+-                else if (it[position].statusMessage == "" && it[position].uid == user) ret =
+-                    VIEWTYPE_MY_PROFILE_WITHOUT_SM
+-                else { }
+-            }
++            if (mItem.get(position).statusMessage != "" && mItem.get(position).uid != user) ret =
++                VIEWTYPE_FRIEND_WITH_SM
++            else if (mItem.get(position).statusMessage == "" &&mItem.get(position).uid != user) ret =
++                VIEWTYPE_FRIEND_WITHOUT_SM
++            else if (mItem.get(position).statusMessage != "" && mItem.get(position).uid == user) ret =
++                VIEWTYPE_MY_PROFILE_WITH_SM
++            else if (mItem.get(position).statusMessage == "" && mItem.get(position).uid == user) ret =
++                VIEWTYPE_MY_PROFILE_WITHOUT_SM
++            else { }
++
++            println("!!!!!!!!!1getItemViewType"+ret)
+             return ret
+         }
+-
+     }
+ }
+ 
