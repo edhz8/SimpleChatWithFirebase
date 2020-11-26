@@ -9,14 +9,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_login.*
 import org.jetbrains.anko.toast
 
-/* 로그인방법을 선택하는 화면 , 앱의 시작화면이다.
-   페이스북 로그인 아직 미구현. 로그인오류일때 세부적으로 처리예정.
- */
 class LoginActivity : AppCompatActivity() {
 
     var googleSignInClient : GoogleSignInClient? = null //구글 로그인구현에 필요한 변수들
@@ -26,8 +22,8 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        goto_emailPage.setOnClickListener {     //emailLoginActivity로 연결.
-            startActivity(Intent(this, emailLoginActivity::class.java))
+        login_email_layout.setOnClickListener {     //emailLoginActivity로 연결.
+            startActivity(Intent(this, EmailLoginActivity::class.java))
         }
 
         var gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)  //구글 로그인구현에 필요한 변수들
@@ -36,30 +32,11 @@ class LoginActivity : AppCompatActivity() {
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        google_register_button.setOnClickListener { //구글 로그인버튼
+        login_google_layout.setOnClickListener { //구글 로그인버튼
             var signInIntent = googleSignInClient?.signInIntent
             startActivityForResult(signInIntent,RC_SIGN_IN)
         }
 
-    }
-
-    fun MoveNextPage() {     //로그인에 성공했는지 확인 후, 성공했다면 MainActivity로 이동한다.
-        var currentUser = FirebaseAuth.getInstance().currentUser
-        val user = FirebaseAuth.getInstance().currentUser?.uid
-
-        if (currentUser != null) {
-
-            var doc = FirebaseFirestore.getInstance().collection("users").document(user.toString())
-
-            doc.get().addOnSuccessListener { document ->
-                if (document.data != null) {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    this.finish()
-                } else {
-                    startActivity(Intent(this, profileEditActivity::class.java))
-                }
-            }
-        }
     }
 
     fun firebaseAuthWithGoogle(idToken: String){    //구글로그인이 성공적인지 확인하는 함수
@@ -67,16 +44,30 @@ class LoginActivity : AppCompatActivity() {
         toast("회원정보 확인중")
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener { task ->
-            if(task.isSuccessful){
-                MoveNextPage()
+                if(task.isSuccessful){
+                    var currentUser = FirebaseAuth.getInstance().currentUser
+                    val user = FirebaseAuth.getInstance().currentUser?.uid
+
+                    if (currentUser != null) {
+
+                        var doc = FirebaseFirestore.getInstance().collection("users").document(user.toString())
+
+                        doc.get().addOnSuccessListener { document ->
+                            if (document.data != null) {                //내 uid에 해당하는 정보가 존재한다면 main으로, 없다면 profileEdit으로 넘어가서 계정생성과젇을 거친다.
+                                startActivity(Intent(this, MainActivity::class.java))
+                                this.finish()
+                            }else{
+                                intent = Intent(this,profileEditActivity::class.java)
+                                intent.putExtra("mode","MAKE_ACCOUNT")
+                                intent.putExtra("email",currentUser.email.toString())
+                                startActivity(intent)
+                            }
+                        }
+                    }
+                }
             }
-        }
     }
 
-    override fun onResume() {   //자동로그인
-        super.onResume()
-        MoveNextPage()
-    }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {   //구글로그인을 구현하는 함수.
         super.onActivityResult(requestCode, resultCode, data)
 

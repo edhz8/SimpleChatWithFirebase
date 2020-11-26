@@ -1,11 +1,11 @@
 package com.example.talk
 
-import io.realm.RealmObject
-
-open class ChatRoomModel(
+data class ChatRoomModel(
+    var profilePicPath : String = "",
     var chatRoomName : String = "",
-    var chatRoomPic : String = "",
-    var noti : String = "",
     var lastChat : String = "",
-    var lastChatTime : Long = System.currentTimeMillis()
-):RealmObject()
+    var lastChatTime : Long? = -1,
+    var uid : String = "",
+    var chatid : String = "",
+    var user : String = ""
+)

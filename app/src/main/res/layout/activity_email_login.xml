@@ -4,85 +4,115 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".emailLoginActivity">
+    android:background="#FFFFFF"
+    tools:context=".EmailLoginActivity">
 
-    <Button
-        android:id="@+id/email_register_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="56dp"
-        android:layout_marginEnd="16dp"
-        android:text="이 정보로 가입하기"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/email_login_button" />
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/emaillogin_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/emaillogin_toolbarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:layout_editor_absoluteX="16dp">
+
+            <ImageView
+                android:id="@+id/emaillogin_toolbar_backArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/emaillogin_toolbar_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/back_arrow"
+                tools:ignore="VectorDrawableCompat" />
+
+            <TextView
+                android:id="@+id/emaillogin_toolbar_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="8dp"
+                android:scrollHorizontally="false"
+                android:text="이메일 계정으로 시작하기"
+                android:textColor="@android:color/black"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/emaillogin_toolbar_backArrow"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.9" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.appcompat.widget.Toolbar>
 
     <EditText
-        android:id="@+id/email_edittext"
-        android:layout_width="0dp"
+        android:id="@+id/emaillogin_emailEdittext"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="87dp"
-        android:layout_marginEnd="16dp"
-        android:hint="Email"
+        android:layout_marginTop="64dp"
+        android:hint="이메일주소"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintTop_toBottomOf="@+id/emaillogin_toolbar" />
+
+    <EditText
+        android:id="@+id/emaillogin_passwordEdittext"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:hint="비밀번호"
+        android:textSize="24sp"
+        android:inputType="textPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/emaillogin_emailEdittext" />
 
     <Button
-        android:id="@+id/email_login_button"
-        android:layout_width="0dp"
+        android:id="@+id/emaillogin_loginButton"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="64dp"
+        android:background="@drawable/buttonlayout"
         android:text="로그인"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password_edittext" />
-
-    <EditText
-        android:id="@+id/password_edittext"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="16dp"
-        android:hint="Password"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/email_edittext" />
+        app:layout_constraintTop_toBottomOf="@+id/emaillogin_passwordEdittext" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/emaillogin_or"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="94dp"
-        android:text="이메일로 시작하기"
-        android:textSize="30sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="OR"
+        android:text="또는"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/email_register_button"
+        app:layout_constraintBottom_toTopOf="@+id/emaillogin_registerButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/email_login_button" />
+        app:layout_constraintTop_toBottomOf="@+id/emaillogin_loginButton" />
+
+    <Button
+        android:id="@+id/emaillogin_registerButton"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:background="@drawable/buttonlayout"
+        android:text="이 정보로 가입하기"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.51"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/emaillogin_loginButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

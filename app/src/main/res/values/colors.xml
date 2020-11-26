@@ -3,4 +3,7 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="color_division">#EBEBEB</color>
+    <color name="custom_gray">#CACACA</color>
+    <color name="custom_yellow">#e9da29</color>
 </resources>

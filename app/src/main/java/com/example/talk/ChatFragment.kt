@@ -1,59 +1,141 @@
 package com.example.talk
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_chat.view.*
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ChatFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ChatFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+    var db : FirebaseFirestore? = null
+    var user : String? = null
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
+        var view = LayoutInflater.from(activity).inflate(R.layout.fragment_chat,container,false)
+        db = FirebaseFirestore.getInstance()
+        user = FirebaseAuth.getInstance().currentUser?.uid.toString()
+
+        view.chat_recyclerview.adapter = chatroomRecyclerViewAdapter()
+        view.chat_recyclerview.layoutManager = LinearLayoutManager(activity)
+        return view
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_chat, container, false)
-    }
+    inner class chatroomRecyclerViewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+        var chatList : ArrayList<ChatRoomModel> = arrayListOf()
+        init{                                       //개인채팅아이템을 불러오는 과정.
+            db?.collection("users")
+                ?.document(user!!)
+                ?.collection("friends")
+                ?.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+                    chatList.clear()
+                    if (firebaseFirestoreException != null) return@addSnapshotListener
+                    if (querySnapshot != null) {
+                        for (dc in querySnapshot.documents) {
+                            val chatid = dc["chatid"].toString()
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ChatFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ChatFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                            if (chatid != ""){  //chatid가 있다면 찾기
+                                val frienduid = dc.id
+                                val nickname = dc["nickname"].toString()
+                                var lastchat : String=""
+                                var lastchattime : Long = -1
+
+                                db!!.collection("privatechat")
+                                    .whereEqualTo("chatid",chatid)
+                                    .addSnapshotListener{snapshot, exception ->
+                                        if(exception != null) return@addSnapshotListener
+                                        if(snapshot != null){
+                                            snapshot.forEach{
+                                                lastchat = it["lastchat"].toString()
+                                                lastchattime = it["lastchattime"] as Long
+                                            }
+                                        }
+                                    }
+
+                                db!!.collection("users")
+                                    .whereEqualTo("uid", frienduid)
+                                    .addSnapshotListener { snapshot, exception ->
+                                        if (exception != null) return@addSnapshotListener
+                                        if (snapshot != null) {
+                                            snapshot.forEach {
+                                                val profilePicPath =
+                                                    if (it["profilePicPath"] != "") it["profilePicPath"].toString() else getString(
+                                                        R.string.default_profilePic_url
+                                                    )
+
+                                                val item = ChatRoomModel(
+                                                    profilePicPath = profilePicPath,
+                                                    chatRoomName = nickname,
+                                                    lastChat = lastchat,
+                                                    lastChatTime = lastchattime,
+                                                    user = user!!,
+                                                    uid = frienduid,
+                                                    chatid = chatid
+                                                )
+                                                chatList.add(item)
+                                            }
+                                            notifyDataSetChanged()
+                                        }
+                                    }
+                            }
+                        }
+                    }
+
                 }
+
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            var view : View?
+            view = LayoutInflater.from(parent.context).inflate(R.layout.chatroom, parent, false)
+            return chatRoomViewHolder(view)
+        }
+
+        override fun getItemCount(): Int = chatList.size
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            val item = chatList[position]
+            (holder as chatroomRecyclerViewAdapter.chatRoomViewHolder).chatRoomNameView.text = item.chatRoomName
+            Glide.with(holder.profilePicView.context)
+                .load(item.profilePicPath)
+                .into(holder.profilePicView)
+
+            holder.lastChatView.text = item.lastChat
+
+            val format = SimpleDateFormat("HH시 mm분")
+            val date : String = format.format( Date(item.lastChatTime!!))
+            holder.lastChatTime.text = date
+            holder.itemView.setOnClickListener{
+                val uidList : ArrayList<String> = arrayListOf(
+                    user!!,
+                    item.uid
+                )
+                val intent = Intent(activity,ChatActivity::class.java)
+                intent.putStringArrayListExtra("uidList",uidList)
+                intent.putExtra("roomName",item.chatRoomName)
+                intent.putExtra("chatid",item.chatid)
+                intent.putExtra("mode","privatechat")
+                startActivity(intent)
             }
+        }
+
+        inner class chatRoomViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            val chatRoomNameView : TextView = itemView.findViewById(R.id.item_chatroom_chatRoomName)
+            val profilePicView : ImageView = itemView.findViewById(R.id.item_chatroom_profilePic)
+            val lastChatView : TextView = itemView.findViewById(R.id.item_chatroom_lastChat)
+            val lastChatTime : TextView = itemView.findViewById(R.id.item_chatroom_time)
+        }
     }
 }

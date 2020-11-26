@@ -4,19 +4,25 @@
 
     <item
         android:id="@+id/home"
-        app:showAsAction="always"
-        android:icon="@drawable/ic_baseline_home_24"
         android:enabled="true"
-        android:checked="true"
-        android:title="Home"
-        />
+        android:icon="@drawable/friend_selector"
+        android:title="friend" />
 
     <item
         android:id="@+id/chat"
-        app:showAsAction="always"
-        android:icon="@drawable/ic_baseline_chat_24"
         android:enabled="true"
-        android:title="Chat"
-        />
+        android:icon="@drawable/chat_selector"
+        android:title="Chat" />
+    <item
+        android:id="@+id/groupchat"
+        android:enabled="true"
+        android:icon="@drawable/group_chat_selector"
+        android:title="GroupChat" />
+    <item
+        android:id="@+id/setting"
+        android:enabled="true"
+        android:icon="@drawable/setting_selector"
+        android:title="Setting" />
+
 
 </menu>

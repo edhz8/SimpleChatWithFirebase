@@ -3,16 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".FriendFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:visibility="visible"
         android:id="@+id/friend_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
-        android:divider="#ffffff"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        />
 </FrameLayout>
