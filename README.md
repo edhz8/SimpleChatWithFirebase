@@ -1,5 +1,8 @@
 # SimpleChatWithFirebase
 
+## 2021-01-12
+### 프롤로그 : https://medium.com/@edhz/simplechatwithfirebase-%ED%94%84%EB%A1%A4%EB%A1%9C%EA%B7%B8-e94ffb56bb1f
+
 ## 2021-01-11
 ### 이 프로젝트는 2020년 상반기에 시작하여 10월말에 1차완성이 되었습니다. 
 ### 100% 코틀린으로 작성되었고, Firebase를 이용하여 DB를 구현하였습니다.
