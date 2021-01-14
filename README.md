@@ -1,7 +1,11 @@
 # SimpleChatWithFirebase
 
+## 2021-01-15
+### DB설계 : https://medium.com/@edhz/simplechatwithfirebase-db-%EC%84%A4%EA%B3%84-79a92fe5d3e3
+
 ## 2021-01-13
 ### 로그인구현 : https://medium.com/@edhz/simplechatwithfirebase-%ED%8C%8C%EC%9D%B4%EC%96%B4%EB%B2%A0%EC%9D%B4%EC%8A%A4-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%EA%B5%AC%ED%98%84-346835a98b07
+
 ## 2021-01-12
 ### 프롤로그 : https://medium.com/@edhz/simplechatwithfirebase-%ED%94%84%EB%A1%A4%EB%A1%9C%EA%B7%B8-e94ffb56bb1f
 
